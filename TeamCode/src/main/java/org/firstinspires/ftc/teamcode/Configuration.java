@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 public class Configuration {
-    public static final double maxSpeed = 0.8;
+    public static final double maxSpeed = 0.4;
     public static final double turnSpeed = 0.4;
-    public static final double maxAccelRps = maxSpeed;
+    public static final double maxAccelRps = maxSpeed * 2;
 
     // robot wont drive if the modules arent within this of the desired position
     public static final double rotToleranceToDriveDegrees = 45;

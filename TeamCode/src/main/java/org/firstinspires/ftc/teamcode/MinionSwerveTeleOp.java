@@ -5,9 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 @SuppressWarnings("unused")
 @TeleOp(name = "Minion Swerve TeleOp")
 public class MinionSwerveTeleOp extends LinearOpMode {
+    public static Telemetry g_tele;
     Drivetrain drive;
     IMU imu;
 
@@ -19,6 +22,7 @@ public class MinionSwerveTeleOp extends LinearOpMode {
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.UP)));
         imu.resetYaw();
         drive = new Drivetrain(hardwareMap, imu);
+        g_tele = telemetry;
 
         while (opModeIsActive()) {
             telemetry.addData("Instructions", "Left joy for translation." +

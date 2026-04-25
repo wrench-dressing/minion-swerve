@@ -42,9 +42,9 @@ public class Drivetrain {
         }
 
         public void stop() {
-            top.setPower(0);
-            bottom.setPower(0);
-            speedCommandRamp.update(0);
+            double v = speedCommandRamp.update(0);
+            top.setPower(v);
+            bottom.setPower(-v);
         }
 
         public double encoder() {
