@@ -15,8 +15,16 @@ public class Drivetrain {
         }
 
         public void go(double translation, double angle, boolean fieldRelative) {
-            double speedPower = translation * Configuration.maxSpeed;
-            double rotPower = rotationalPower(1 - speedPower, angle, fieldRelative);
+            double desiredRotation = calculateDesiredRotation(angle, fieldRelative);
+
+            double speedPower;
+            if (Math.abs(desiredRotation) < Configuration.rotToleranceToDrive)
+                speedPower = translation * Configuration.maxSpeed;
+            else
+                speedPower = 0;
+
+            double maxRotPower = 1 - speedPower;
+            double rotPower = Utils.clamp(-maxRotPower, maxRotPower, desiredRotation * Configuration.rotationGain);
 
             top.setPower(rotPower + speedPower);
             bottom.setPower(rotPower - speedPower);
@@ -31,15 +39,17 @@ public class Drivetrain {
             return (top.getCurrentPosition() / 8192.0 + 1) % 1;
         }
 
-        private double rotationalPower(double maximum, double toAngleDeg, boolean fieldRelative) {
+        private double calculateDesiredRotation(double toAngleDeg, boolean fieldRelative) {
             double rot = (toAngleDeg + 360) % 360 / 360;
             if (fieldRelative) {
                 double currentHeading = (imu.getRobotYawPitchRollAngles().getYaw() / 360 + 0.5) % 1;
                 rot -= currentHeading;
             }
 
-            double rotChange = ((encoder() - rot + 0.5) % 1 + 1) % 1 - 0.5;
-            return Utils.clamp(-maximum, maximum, rotChange * 5) % 1;
+            // shortest wraparound distance to point
+            // it would be simpler if Java moduli always returned positive
+            // so there's a lot of normalization math
+            return ((encoder() - rot + 0.5) % 1 + 1) % 1 - 0.5;
         }
     }
 
