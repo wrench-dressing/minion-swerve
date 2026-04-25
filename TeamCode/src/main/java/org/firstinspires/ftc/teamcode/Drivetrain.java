@@ -9,9 +9,12 @@ public class Drivetrain {
         public final DcMotorEx top;
         public final DcMotorEx bottom;
 
+        private final Ramp speedCommandRamp;
+
         public Module(DcMotorEx top, DcMotorEx bottom) {
             this.top = top;
             this.bottom = bottom;
+            speedCommandRamp = new Ramp(0, Configuration.maxAccelRps);
         }
 
         public void go(double translation, double angle, boolean fieldRelative) {
@@ -22,16 +25,17 @@ public class Drivetrain {
             if (invert)
                 desiredRotation = calculateDesiredRotation(angle + 180, fieldRelative);
 
-            double speedPower;
+            double desiredSpeed;
             if (Math.abs(desiredRotation) < Configuration.rotToleranceToDrive)
-                speedPower = translation * Configuration.maxSpeed;
+                desiredSpeed = translation * Configuration.maxSpeed;
             else
-                speedPower = 0;
+                desiredSpeed = 0;
 
-            double maxRotPower = 1 - speedPower;
+            double maxRotPower = 1 - desiredSpeed;
             double rotPower = Utils.clamp(-maxRotPower, maxRotPower, desiredRotation * Configuration.rotationGain);
 
-            double speedCommand = speedPower * (invert ? -1 : 1);
+            double desiredSpeedCommand = desiredSpeed * (invert ? -1 : 1);
+            double speedCommand = speedCommandRamp.update(desiredSpeedCommand);
 
             top.setPower(rotPower + speedCommand);
             bottom.setPower(rotPower - speedCommand);
@@ -40,6 +44,7 @@ public class Drivetrain {
         public void stop() {
             top.setPower(0);
             bottom.setPower(0);
+            speedCommandRamp.update(0);
         }
 
         public double encoder() {
