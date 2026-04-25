@@ -16,8 +16,8 @@ public class Drivetrain {
         }
 
         public void go(double translation, double angle, boolean fieldRelative) {
-            double rotPower = rotationalPower(angle, fieldRelative);
             double speedPower = translation * maxSpeed();
+            double rotPower = rotationalPower(1 - speedPower, angle, fieldRelative);
 
             top.setPower(rotPower + speedPower);
             bottom.setPower(rotPower - speedPower);
@@ -32,7 +32,7 @@ public class Drivetrain {
             return (top.getCurrentPosition() / 8192.0 + 1) % 1;
         }
 
-        private double rotationalPower(double toAngleDeg, boolean fieldRelative) {
+        private double rotationalPower(double maximum, double toAngleDeg, boolean fieldRelative) {
             double rot = (toAngleDeg + 360) % 360 / 360;
             if (fieldRelative) {
                 double currentHeading = (imu.getRobotYawPitchRollAngles().getYaw() / 360 + 0.5) % 1;
@@ -40,8 +40,7 @@ public class Drivetrain {
             }
 
             double rotChange = ((encoder() - rot + 0.5) % 1 + 1) % 1 - 0.5;
-            double rotClamp = 1 - maxSpeed();
-            return Utils.clamp(-rotClamp, rotClamp, rotChange * 5) % 1;
+            return Utils.clamp(-maximum, maximum, rotChange * 5) % 1;
         }
     }
 
