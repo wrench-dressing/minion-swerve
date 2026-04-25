@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -16,7 +15,7 @@ public class Drivetrain {
         }
 
         public void go(double translation, double angle, boolean fieldRelative) {
-            double speedPower = translation * maxSpeed();
+            double speedPower = translation * Configuration.maxSpeed;
             double rotPower = rotationalPower(1 - speedPower, angle, fieldRelative);
 
             top.setPower(rotPower + speedPower);
@@ -46,16 +45,7 @@ public class Drivetrain {
 
     private final Module front;
     private final Module back;
-    private boolean fastMode = false;
     private final IMU imu;
-
-    public void setFastMode(boolean fastMode) {
-        this.fastMode = fastMode;
-    }
-
-    private double maxSpeed() {
-        return fastMode ? Configuration.maxSpeedHigh : Configuration.maxSpeedLow;
-    }
 
     public Drivetrain(HardwareMap hw, IMU imu) {
         front = new Module(

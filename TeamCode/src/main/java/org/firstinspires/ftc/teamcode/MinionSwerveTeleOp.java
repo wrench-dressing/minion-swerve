@@ -11,8 +11,6 @@ public class MinionSwerveTeleOp extends LinearOpMode {
     Drivetrain drive;
     IMU imu;
 
-    boolean fastMode = false;
-
     @Override
     public void runOpMode() {
         waitForStart();
@@ -26,12 +24,6 @@ public class MinionSwerveTeleOp extends LinearOpMode {
             telemetry.addData("Instructions", "Left joy for translation." +
                     "Triggers to turn. B = toggle Fast Mode." +
                     "Options = Reset encoders. Start = Reset IMU.");
-
-            if (gamepad1.bWasPressed()) {
-                fastMode = !fastMode;
-                drive.setFastMode(fastMode);
-            }
-            telemetry.addData("Fast mode", fastMode ? "ON" : "OFF");
 
             if (gamepad1.startWasPressed())
                 imu.resetYaw();
