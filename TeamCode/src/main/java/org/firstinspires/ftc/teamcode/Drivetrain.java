@@ -17,6 +17,11 @@ public class Drivetrain {
         public void go(double translation, double angle, boolean fieldRelative) {
             double desiredRotation = calculateDesiredRotation(angle, fieldRelative);
 
+            // more efficient to invert the wheels
+            boolean invert = Math.abs(desiredRotation) > 0.25;
+            if (invert)
+                desiredRotation = calculateDesiredRotation(angle + 180, fieldRelative);
+
             double speedPower;
             if (Math.abs(desiredRotation) < Configuration.rotToleranceToDrive)
                 speedPower = translation * Configuration.maxSpeed;
@@ -26,8 +31,10 @@ public class Drivetrain {
             double maxRotPower = 1 - speedPower;
             double rotPower = Utils.clamp(-maxRotPower, maxRotPower, desiredRotation * Configuration.rotationGain);
 
-            top.setPower(rotPower + speedPower);
-            bottom.setPower(rotPower - speedPower);
+            double speedCommand = speedPower * (invert ? -1 : 1);
+
+            top.setPower(rotPower + speedCommand);
+            bottom.setPower(rotPower - speedCommand);
         }
 
         public void stop() {
