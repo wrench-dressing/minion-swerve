@@ -18,11 +18,11 @@ public class MinionSwerveTeleOp extends LinearOpMode {
     public void runOpMode() {
         waitForStart();
 
+        g_tele = telemetry;
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.UP)));
         imu.resetYaw();
         drive = new Drivetrain(hardwareMap, imu);
-        g_tele = telemetry;
 
         while (opModeIsActive()) {
             telemetry.addData("Instructions", "Left joy for translation." +
@@ -39,24 +39,7 @@ public class MinionSwerveTeleOp extends LinearOpMode {
     }
 
     private void movement() {
-        double turnLeft = gamepad1.left_trigger;
-        double turnRight = gamepad1.right_trigger;
-
-        if (turnLeft > 0.1 || turnRight > 0.1) {
-            // turning
-            double amount = turnLeft - turnRight;
-            drive.turn(amount);
-            return;
-        }
-
-        // regular movement
         Vector leftJoy = new Vector(gamepad1.left_stick_x, gamepad1.left_stick_y - 0.01).deadbanded(0.1);
-        telemetry.addData("left joystick", leftJoy);
-        if (!leftJoy.isZeroed()) {
-            drive.move(leftJoy.magnitude(), leftJoy.reversed().angle());
-            return;
-        }
-
-        drive.stop();
+        drive.move(leftJoy.reversed(), gamepad1.right_stick_x * Configuration.angularMaxSpeed);
     }
 }

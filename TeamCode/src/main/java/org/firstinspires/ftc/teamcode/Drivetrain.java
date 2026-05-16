@@ -33,18 +33,11 @@ public class Drivetrain {
 
             double maxRotPower = 1 - desiredSpeed;
             double rotPower = Utils.clamp(-maxRotPower, maxRotPower, desiredRotation * Configuration.rotationGain);
-
             double desiredSpeedCommand = desiredSpeed * (invert ? -1 : 1);
             double speedCommand = speedCommandRamp.update(desiredSpeedCommand);
 
             top.setPower(rotPower + speedCommand);
             bottom.setPower(rotPower - speedCommand);
-        }
-
-        public void stop() {
-            double v = speedCommandRamp.update(0);
-            top.setPower(v);
-            bottom.setPower(-v);
         }
 
         public double encoder() {
@@ -68,6 +61,7 @@ public class Drivetrain {
     private final Module front;
     private final Module back;
     private final IMU imu;
+    private final SwerveKinematics kinematics;
 
     public Drivetrain(HardwareMap hw, IMU imu) {
         front = new Module(
@@ -77,20 +71,16 @@ public class Drivetrain {
                 hw.get(DcMotorEx.class, Configuration.BACK_TOP_MOTOR),
                 hw.get(DcMotorEx.class, Configuration.BACK_BOTTOM_MOTOR));
         this.imu = imu;
+        kinematics = new SwerveKinematics(
+                new Vector(0.0635, 0),
+                new Vector(-0.0635, 0)
+        );
     }
 
-    public void move(double translation, double angle) {
-        front.go(translation, angle, true);
-        back.go(-translation, angle, true);
-    }
-
-    public void turn(double rps) {
-        front.go(rps * Configuration.turnSpeed, 90, false);
-        back.go(rps * Configuration.turnSpeed, 90, false);
-    }
-
-    public void stop() {
-        front.stop();
-        back.stop();
+    public void move(Vector where, double angleDegrees) {
+        SwerveKinematics.SwerveModuleState[] states =
+                kinematics.toModuleStates(where, Math.toRadians(angleDegrees));
+        front.go(-states[0].speed, states[0].angle, false);
+        back.go(states[1].speed, states[1].angle, false);
     }
 }
